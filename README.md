@@ -37,13 +37,12 @@ Request → Middleware → Rate Limiter → Auth → ML Detection → Response
 git clone <your-repo>
 cd project
 
+pip install -r requirements.txt
 
+uvicorn app.main:app --reload
+```
 
 
 
 IF ANYONE WANT TO MAKE IMPROVEMENT OR MAKE FRONTEND FEEL FREE TO CONNECT WITH ME 
 
-pip install -r requirements.txt
-
-uvicorn app.main:app --reload
-```
