@@ -24,6 +24,9 @@ class UserActivity(Base):
     id = Column(Integer, primary_key=True, index=True)
     user = Column(String)
     endpoint = Column(String)
+    method = Column(String)
+    status_code = Column(Integer)
+    latency_ms = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
 

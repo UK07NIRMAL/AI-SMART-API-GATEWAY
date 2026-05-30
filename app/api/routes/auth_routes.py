@@ -58,6 +58,20 @@ def login(data: LoginRequest):
 
     token = create_access_token({"sub": user.email, "role": user.role})
 
+    response = {
+        "access_token": token,
+        "user": {
+            "email": user.email,
+            "role": user.role,
+            "api_key": user.api_key,
+        },
+    }
+
     db.close()
 
-    return success_response({"access_token": token})
+    return response
+
+
+@router.post("/logout")
+def logout():
+    return {"message": "Logged out successfully"}

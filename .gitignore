@@ -1,14 +1,41 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
+# Virtual Environment
+venv/
 .env
 
-venv/
-env/
-
-.idea/
+# IDE
 .vscode/
+.idea/
 
-.DS_Store
-
+# Logs
 *.log
+
+# Database
+*.db
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Environment Variables
+.env
+
+# Redis dumps
+dump.rdb
+
+# Frontend
+node_modules/
+dist/
+.vite/

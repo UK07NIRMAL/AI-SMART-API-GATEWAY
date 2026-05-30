@@ -2,6 +2,7 @@ import time
 import uuid
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.routes.auth_routes import router as auth_router
@@ -14,6 +15,14 @@ from app.services.rate_limiter import is_allowed
 from app.utils.logger import logger
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth_router)
 app.include_router(main_router)
@@ -41,11 +50,10 @@ async def log_requests(request: Request, call_next):
     if not is_allowed(identifier):
         return JSONResponse(status_code=429, content={"detail": "Too many requests"})
 
-    if detect_fraud(identifier):
-        return JSONResponse(status_code=403, content={"detail": "Fraud detected"})
+    # if detect_fraud(identifier):
+    # return JSONResponse(status_code=403, content={"detail": "Fraud detected"})
 
     endpoint = request.url.path
-    log_activity(identifier, endpoint)
 
     logger.info(f"[{request_id}] ID: {identifier} | {request.method} {request.url}")
 
@@ -59,6 +67,13 @@ async def log_requests(request: Request, call_next):
 
     process_time = time.time() - start_time
 
+    log_activity(
+        identifier,
+        endpoint,
+        request.method,
+        response.status_code,
+        f"{process_time * 1000:.2f}ms",
+    )
     logger.info(
         f"[{request_id}] Status: {response.status_code} | Time: {process_time:.4f}s"
     )
