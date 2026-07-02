@@ -123,7 +123,7 @@ Database / Response
 
 ```bash
 git clone <repository-url>
-cd NeuroGate-AI
+cd AI-SMART-API-GATEWAY
 ```
 
 ## Create Virtual Environment
@@ -232,5 +232,3 @@ http://127.0.0.1:8000/docs
 ---
 
 # 📜 License
-
-This project was built for learning, portfolio development, and backend system design practice.

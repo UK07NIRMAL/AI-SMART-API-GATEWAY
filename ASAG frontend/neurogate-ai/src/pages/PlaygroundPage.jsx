@@ -3,17 +3,17 @@
  * Interactive API request builder with response viewer.
  */
 
-import { useState } from 'react';
-import AppLayout from '../components/AppLayout';
-import { playgroundService } from '../services/api';
+import { useState } from "react";
+import AppLayout from "../components/AppLayout";
+import { playgroundService } from "../services/api";
 
-const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
 const SAMPLE_ENDPOINTS = [
-  { label: '/v2/neural/inference/async', method: 'POST', active: true },
-  { label: '/v2/neural/gate/status',     method: 'GET',  active: false },
-  { label: '/v2/config/weights/update',  method: 'PUT',  active: false },
-  { label: '/v2/nodes/purge/cluster_alpha', method: 'DELETE', active: false },
+  { label: "/v2/neural/inference/async", method: "POST", active: true },
+  { label: "/v2/neural/gate/status", method: "GET", active: false },
+  { label: "/v2/config/weights/update", method: "PUT", active: false },
+  { label: "/v2/nodes/purge/cluster_alpha", method: "DELETE", active: false },
 ];
 
 const DEFAULT_HEADERS = `{
@@ -34,8 +34,8 @@ const DEFAULT_BODY = `{
 
 const MOCK_RESPONSE = {
   status: 200,
-  latency: '42ms',
-  size: '1.2 KB',
+  latency: "42ms",
+  size: "1.2 KB",
   body: `{
   "id": "resp_neural_9k2x8j1",
   "model": "neural-v4",
@@ -55,34 +55,55 @@ const MOCK_RESPONSE = {
 }`,
 };
 
-const ACTIVE_TAB_STYLE = 'border-b-2 border-primary text-primary';
-const INACTIVE_TAB_STYLE = 'border-b-2 border-transparent text-on-surface-variant hover:text-on-surface';
+const ACTIVE_TAB_STYLE = "border-b-2 border-primary text-primary";
+const INACTIVE_TAB_STYLE =
+  "border-b-2 border-transparent text-on-surface-variant hover:text-on-surface";
 
 export default function PlaygroundPage() {
-  const [method, setMethod]     = useState('POST');
-  const [url, setUrl]           = useState('https://api.neurogate.ai/v2/neural/inference/async');
-  const [activeTab, setActiveTab] = useState('headers');
+  const [method, setMethod] = useState("POST");
+  const [url, setUrl] = useState(
+    "https://api.neurogate.ai/v2/neural/inference/async",
+  );
+  const [activeTab, setActiveTab] = useState("headers");
   const [headersText, setHeadersText] = useState(DEFAULT_HEADERS);
   const [bodyText, setBodyText] = useState(DEFAULT_BODY);
   const [response, setResponse] = useState(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-  const [copied, setCopied]     = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
   const [selectedEndpoint, setSelectedEndpoint] = useState(0);
 
   const handleSend = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     setResponse(null);
     try {
       let headers = {};
       let body = undefined;
-      try { headers = JSON.parse(headersText); } catch { /* ignore */ }
-      if (method !== 'GET' && method !== 'DELETE') {
-        try { body = JSON.parse(bodyText); } catch { /* ignore */ }
+      try {
+        headers = JSON.parse(headersText);
+      } catch {
+        /* ignore */
       }
-      const { data } = await playgroundService.execute({ method, url, headers, body });
-      setResponse({ status: data.status || 200, latency: data.latency || '—', size: data.size || '—', body: JSON.stringify(data.response || data, null, 2) });
+      if (method !== "GET" && method !== "DELETE") {
+        try {
+          body = JSON.parse(bodyText);
+        } catch {
+          /* ignore */
+        }
+      }
+      const { data } = await playgroundService.execute({
+        method,
+        url,
+        headers,
+        body,
+      });
+      setResponse({
+        status: data.status || 200,
+        latency: data.latency || "—",
+        size: data.size || "—",
+        body: JSON.stringify(data.response || data, null, 2),
+      });
     } catch {
       // Use mock response when backend not connected
       setResponse(MOCK_RESPONSE);
@@ -126,16 +147,24 @@ export default function PlaygroundPage() {
                 onClick={() => selectEndpoint(i)}
                 className={`w-full p-3 rounded-lg text-left group cursor-pointer transition-colors ${
                   selectedEndpoint === i
-                    ? 'bg-surface-container-highest border-l-2 border-primary'
-                    : 'hover:bg-surface-container-highest/50 border-l-2 border-transparent'
+                    ? "bg-surface-container-highest border-l-2 border-primary"
+                    : "hover:bg-surface-container-highest/50 border-l-2 border-transparent"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-[10px] font-bold font-label px-1.5 py-0.5 rounded ${
-                    ep.method === 'GET' ? 'text-primary bg-primary/10' :
-                    ep.method === 'POST' ? 'text-secondary bg-secondary/10' :
-                    ep.method === 'DELETE' ? 'text-error bg-error/10' : 'text-tertiary bg-tertiary/10'
-                  }`}>{ep.method}</span>
+                  <span
+                    className={`text-[10px] font-bold font-label px-1.5 py-0.5 rounded ${
+                      ep.method === "GET"
+                        ? "text-primary bg-primary/10"
+                        : ep.method === "POST"
+                          ? "text-secondary bg-secondary/10"
+                          : ep.method === "DELETE"
+                            ? "text-error bg-error/10"
+                            : "text-tertiary bg-tertiary/10"
+                    }`}
+                  >
+                    {ep.method}
+                  </span>
                 </div>
                 <div className="text-xs truncate font-mono text-on-surface-variant group-hover:text-on-surface transition-colors">
                   {ep.label}
@@ -150,8 +179,12 @@ export default function PlaygroundPage() {
           {/* Page header */}
           <header className="bg-surface-container-low px-8 py-6 border-b border-outline-variant/5 flex items-center justify-between">
             <div>
-              <span className="text-primary font-label text-[10px] uppercase tracking-[0.2em] mb-1 block">Developer Tools</span>
-              <h2 className="font-headline font-bold text-xl tracking-tight text-on-surface">API Playground</h2>
+              <span className="text-primary font-label text-[10px] uppercase tracking-[0.2em] mb-1 block">
+                Developer Tools
+              </span>
+              <h2 className="font-headline font-bold text-xl tracking-tight text-on-surface">
+                API Playground
+              </h2>
             </div>
             <div className="flex items-center gap-4 text-xs font-mono text-on-surface-variant">
               <span className="flex items-center gap-1.5">
@@ -173,10 +206,14 @@ export default function PlaygroundPage() {
                     className="bg-surface-container-high text-primary font-mono text-sm px-4 py-3 rounded-lg focus:ring-1 focus:ring-primary outline-none appearance-none pr-8 cursor-pointer min-w-[110px]"
                   >
                     {HTTP_METHODS.map((m) => (
-                      <option key={m} value={m}>{m}</option>
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
                     ))}
                   </select>
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-[14px]">expand_more</span>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-[14px]">
+                    expand_more
+                  </span>
                 </div>
 
                 <input
@@ -192,21 +229,24 @@ export default function PlaygroundPage() {
                   disabled={loading}
                   className="bg-primary text-on-primary px-8 py-3 rounded-lg font-headline font-bold text-sm flex items-center gap-2 transition-transform active:scale-95 hover:brightness-110 disabled:opacity-60 flex-shrink-0"
                 >
-                  {loading
-                    ? <div className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin" />
-                    : <span className="material-symbols-outlined text-[18px] group-hover:rotate-90 transition-transform">send</span>
-                  }
-                  {loading ? 'Sending…' : 'Send'}
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span className="material-symbols-outlined text-[18px] group-hover:rotate-90 transition-transform">
+                      send
+                    </span>
+                  )}
+                  {loading ? "Sending…" : "Send"}
                 </button>
               </div>
 
               {/* Request Tabs */}
               <div className="border-b border-outline-variant/10 flex gap-8 mb-5">
                 {[
-                  { id: 'headers', label: 'Headers' },
-                  { id: 'body',    label: 'Body (JSON)' },
-                  { id: 'auth',    label: 'Auth' },
-                  { id: 'params',  label: 'Query Params' },
+                  { id: "headers", label: "Headers" },
+                  { id: "body", label: "Body (JSON)" },
+                  { id: "auth", label: "Auth" },
+                  { id: "params", label: "Query Params" },
                 ].map(({ id, label }) => (
                   <button
                     key={id}
@@ -220,7 +260,7 @@ export default function PlaygroundPage() {
 
               {/* Tab content */}
               <div className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/10 font-mono text-xs min-h-[180px]">
-                {activeTab === 'headers' && (
+                {activeTab === "headers" && (
                   <textarea
                     value={headersText}
                     onChange={(e) => setHeadersText(e.target.value)}
@@ -228,7 +268,7 @@ export default function PlaygroundPage() {
                     spellCheck={false}
                   />
                 )}
-                {activeTab === 'body' && (
+                {activeTab === "body" && (
                   <textarea
                     value={bodyText}
                     onChange={(e) => setBodyText(e.target.value)}
@@ -236,9 +276,11 @@ export default function PlaygroundPage() {
                     spellCheck={false}
                   />
                 )}
-                {activeTab === 'auth' && (
+                {activeTab === "auth" && (
                   <div className="space-y-3 py-2">
-                    <p className="text-on-surface-variant text-[10px] uppercase tracking-widest mb-4">Bearer Token</p>
+                    <p className="text-on-surface-variant text-[10px] uppercase tracking-widest mb-4">
+                      Bearer Token
+                    </p>
                     <input
                       type="text"
                       placeholder="ng_live_YOUR_API_KEY"
@@ -246,13 +288,24 @@ export default function PlaygroundPage() {
                     />
                   </div>
                 )}
-                {activeTab === 'params' && (
+                {activeTab === "params" && (
                   <div className="space-y-2 py-2">
-                    <p className="text-on-surface-variant text-[10px] uppercase tracking-widest mb-4">Query Parameters</p>
-                    {[['stream', 'false'], ['version', 'v2']].map(([k, v]) => (
+                    <p className="text-on-surface-variant text-[10px] uppercase tracking-widest mb-4">
+                      Query Parameters
+                    </p>
+                    {[
+                      ["stream", "false"],
+                      ["version", "v2"],
+                    ].map(([k, v]) => (
                       <div key={k} className="flex gap-3">
-                        <input defaultValue={k} className="flex-1 bg-surface-container-low rounded px-3 py-1.5 text-on-surface outline-none focus:ring-1 focus:ring-primary" />
-                        <input defaultValue={v} className="flex-1 bg-surface-container-low rounded px-3 py-1.5 text-on-surface outline-none focus:ring-1 focus:ring-primary" />
+                        <input
+                          defaultValue={k}
+                          className="flex-1 bg-surface-container-low rounded px-3 py-1.5 text-on-surface outline-none focus:ring-1 focus:ring-primary"
+                        />
+                        <input
+                          defaultValue={v}
+                          className="flex-1 bg-surface-container-low rounded px-3 py-1.5 text-on-surface outline-none focus:ring-1 focus:ring-primary"
+                        />
                       </div>
                     ))}
                   </div>
@@ -268,19 +321,36 @@ export default function PlaygroundPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-6">
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold font-label px-2 py-0.5 rounded border ${
-                          response.status < 300 ? 'text-primary bg-primary/10 border-primary/20' : 'text-error bg-error/10 border-error/20'
-                        }`}>{response.status}</span>
+                        <span
+                          className={`text-xs font-bold font-label px-2 py-0.5 rounded border ${
+                            response.status < 300
+                              ? "text-primary bg-primary/10 border-primary/20"
+                              : "text-error bg-error/10 border-error/20"
+                          }`}
+                        >
+                          {response.status}
+                        </span>
                       </div>
-                      <span className="text-[10px] font-mono text-on-surface-variant">{response.latency}</span>
-                      <span className="text-[10px] font-mono text-on-surface-variant">{response.size}</span>
+                      <span className="text-[10px] font-mono text-on-surface-variant">
+                        {response.latency}
+                      </span>
+                      <span className="text-[10px] font-mono text-on-surface-variant">
+                        {response.size}
+                      </span>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={copyResponse} className="p-2 text-on-surface-variant hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">{copied ? 'check' : 'content_copy'}</span>
+                      <button
+                        onClick={copyResponse}
+                        className="p-2 text-on-surface-variant hover:text-primary transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          {copied ? "check" : "content_copy"}
+                        </span>
                       </button>
                       <button className="p-2 text-on-surface-variant hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">download</span>
+                        <span className="material-symbols-outlined text-[18px]">
+                          download
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -294,7 +364,9 @@ export default function PlaygroundPage() {
                       Awaiting response…
                     </div>
                   ) : (
-                    <pre className="text-on-surface-variant whitespace-pre-wrap">{response?.body}</pre>
+                    <pre className="text-on-surface-variant whitespace-pre-wrap">
+                      {response?.body}
+                    </pre>
                   )}
                 </div>
               </div>
@@ -302,8 +374,12 @@ export default function PlaygroundPage() {
 
             {!response && !loading && (
               <div className="flex-1 flex flex-col items-center justify-center py-20 text-on-surface-variant/30">
-                <span className="material-symbols-outlined text-6xl mb-4">send</span>
-                <p className="text-sm font-label uppercase tracking-widest">Send a request to see the response</p>
+                <span className="material-symbols-outlined text-6xl mb-4">
+                  send
+                </span>
+                <p className="text-sm font-label uppercase tracking-widest">
+                  Send a request to see the response
+                </p>
               </div>
             )}
           </div>

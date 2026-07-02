@@ -9,7 +9,10 @@ from app.api.routes.dependencies.api_key import get_api_user
 from app.api.routes.dependencies.auth import get_current_user
 from app.core.redis import redis_client
 from app.db.database import SessionLocal, engine
-from app.db.models import User, UserActivity
+from app.db.models import AIRequest, User, UserActivity
+from app.schemas.playground import PlaygroundRequest
+from app.services.ai_logger import log_ai_request
+from app.services.gemini_service import generate_response
 from app.utils.logger import logger
 from app.utils.response import success_response
 
@@ -297,3 +300,50 @@ def system_health():
         "uptime_days": 47,
         "requests_per_second": 284,
     }
+
+
+@router.post("/playground/execute")
+def execute_playground(
+    req: PlaygroundRequest,
+    current_user=Depends(get_current_user),
+):
+
+    prompt = req.body.get("input", {}).get("prompt") if req.body else ""
+
+    ai_response = generate_response(prompt)
+
+    log_ai_request(
+        user=current_user["sub"],
+        prompt=prompt,
+        response=ai_response,
+        model="gemini-2.5-flash",
+        status="success",
+    )
+
+    return {"status": 200, "response": {"output": ai_response}}
+
+
+@router.get("/playground/history")
+def get_playground_history():
+
+    db = SessionLocal()
+
+    history = db.query(AIRequest).order_by(AIRequest.timestamp.desc()).limit(20).all()
+
+    result = []
+
+    for item in history:
+        result.append(
+            {
+                "id": item.id,
+                "user": item.user,
+                "prompt": item.prompt,
+                "model": item.model,
+                "status": item.status,
+                "timestamp": item.timestamp,
+            }
+        )
+
+    db.close()
+
+    return result

@@ -3,23 +3,39 @@ from sklearn.ensemble import IsolationForest
 from app.ml.train import prepare_data
 
 
-def detect_fraud(current_user: str):
+def detect_fraud(current_user: str) -> bool:
+
     data = prepare_data()
+
+    # Not enough data to train a reliable model
+    if len(data) < 10:
+        return False
 
     X = []
     users = []
 
-    for d in data:
-        X.append([d["total_requests"], d["unique_endpoints"], d["requests_per_min"]])
-        users.append(d["user"])
+    for record in data:
+        X.append(
+            [
+                record["total_requests"],
+                record["unique_endpoints"],
+                record["requests_per_min"],
+            ]
+        )
+        users.append(record["user"])
 
-    model = IsolationForest(contamination=0.2)
+    # Unsupervised anomaly detection model
+    model = IsolationForest(contamination=0.2, random_state=42)
+
     model.fit(X)
 
-    preds = model.predict(X)
+    predictions = model.predict(X)
 
-    for i, user in enumerate(users):
+    # -1 = Anomaly
+    #  1 = Normal
+    for index, user in enumerate(users):
         if user == current_user:
-            return preds[i] == -1
+            return predictions[index] == -1
 
+    # User not found in dataset
     return False

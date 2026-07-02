@@ -8,55 +8,88 @@ from app.db.models import UserActivity
 
 
 def prepare_data():
+    """
+    Prepare user activity data for the fraud detection model.
+    """
+
     db = SessionLocal()
-    activities = db.query(UserActivity).all()
 
-    user_data = defaultdict(list)
+    try:
+        activities = db.query(UserActivity).all()
 
-    for act in activities:
-        user_data[act.user].append(act)
+        user_data = defaultdict(list)
 
-    dataset = []
+        for activity in activities:
+            user_data[activity.user].append(activity)
 
-    for user, logs in user_data.items():
-        total_requests = len(logs)
+        dataset = []
 
-        endpoints = set([log.endpoint for log in logs])
-        unique_endpoints = len(endpoints)
-
-        # last 1 min requests
         now = datetime.utcnow()
-        last_min = [log for log in logs if log.timestamp >= now - timedelta(minutes=1)]
-        rpm = len(last_min)
 
-        dataset.append(
-            {
-                "user": user,
-                "total_requests": total_requests,
-                "unique_endpoints": unique_endpoints,
-                "requests_per_min": rpm,
-            }
-        )
+        for user, logs in user_data.items():
 
-    db.close()
-    return dataset
+            total_requests = len(logs)
+
+            unique_endpoints = len({log.endpoint for log in logs})
+
+            requests_per_min = len(
+                [log for log in logs if log.timestamp >= now - timedelta(minutes=1)]
+            )
+
+            dataset.append(
+                {
+                    "user": user,
+                    "total_requests": total_requests,
+                    "unique_endpoints": unique_endpoints,
+                    "requests_per_min": requests_per_min,
+                }
+            )
+
+        return dataset
+
+    finally:
+        db.close()
 
 
 def train_model(data):
-    X = []
+    """
+    Train the Isolation Forest model and print predictions.
+    Used only for testing and development.
+    """
 
-    for d in data:
-        X.append([d["total_requests"], d["unique_endpoints"], d["requests_per_min"]])
+    if len(data) < 5:
+        print("Not enough training data.")
+        return
 
-    model = IsolationForest(contamination=0.2)
+    X = [
+        [
+            user["total_requests"],
+            user["unique_endpoints"],
+            user["requests_per_min"],
+        ]
+        for user in data
+    ]
+
+    model = IsolationForest(
+        contamination=0.2,
+        random_state=42,
+    )
+
     model.fit(X)
 
-    preds = model.predict(X)
+    predictions = model.predict(X)
 
-    for i, user in enumerate(data):
-        print(user["user"], "→", "FRAUD" if preds[i] == -1 else "NORMAL")
+    print("\n========== FRAUD DETECTION REPORT ==========\n")
+
+    for index, user in enumerate(data):
+
+        status = "FRAUD" if predictions[index] == -1 else "NORMAL"
+
+        print(f"{user['user']:<25} --> {status}")
+
+    print("\n============================================\n")
 
 
 if __name__ == "__main__":
-    data = prepare_data()
-    train_model(data)
+    dataset = prepare_data()
+    train_model(dataset)

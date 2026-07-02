@@ -1,4 +1,10 @@
+import logging
+
+import redis
+
 from app.core.redis import redis_client
+
+logger = logging.getLogger(__name__)
 
 WINDOW = 60
 
@@ -12,18 +18,28 @@ def get_limit(identifier: str):
 
 
 def is_allowed(identifier: str):
-    key = f"rate_limit:{identifier}"
+    try:
+        key = f"rate_limit:{identifier}"
 
-    limit = get_limit(identifier)
+        limit = get_limit(identifier)
 
-    current = redis_client.get(key)
+        current = redis_client.get(key)
 
-    if current and int(current) >= limit:
-        return False
+        if current and int(current) >= limit:
+            return False
 
-    pipe = redis_client.pipeline()
-    pipe.incr(key, 1)
-    pipe.expire(key, WINDOW)
-    pipe.execute()
+        pipe = redis_client.pipeline()
 
-    return True
+        pipe.incr(key)
+
+        if not current:
+            pipe.expire(key, WINDOW)
+
+        pipe.execute()
+
+        return True
+
+    except redis.RedisError as e:
+        logger.error(f"Redis Error: {e}")
+
+        return True

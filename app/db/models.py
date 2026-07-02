@@ -30,4 +30,16 @@ class UserActivity(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
 
 
+class AIRequest(Base):
+    __tablename__ = "ai_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user = Column(String)
+    prompt = Column(String)
+    response = Column(String)
+    model = Column(String)
+    status = Column(String)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+
 Base.metadata.create_all(bind=engine)
